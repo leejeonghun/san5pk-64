@@ -3,13 +3,18 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
     <!-- AsmPath should point the directory containing as.exe(binutils), bison.exe and flex.exe -->
-    <AsmPath>C:\msys32\usr\bin\</AsmPath>
+    <AsmPath>$(SolutionDir)bin\</AsmPath>
   </PropertyGroup>
   <PropertyGroup>
     <_PropertySheetDisplayName>MacroPropertySheet</_PropertySheetDisplayName>
-    <IncludePath>$(SolutionDir)wow32;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)winevdm\wow32;$(IncludePath)</IncludePath>
   </PropertyGroup>
-  <ItemDefinitionGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;WINE_NO_TRACE_MSGS;WINE_NO_DEBUG_MSGS;</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4244;4146;4018;4267;4047;4098;4090;4305;4716;4133;4024;4101;4715</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <BuildMacro Include="AsmPath">
       <Value>$(AsmPath)</Value>
