@@ -266,6 +266,7 @@ static const CALLFROM16 *get_entry_point( STACK16FRAME *frame, LPSTR module, LPS
 {
     WORD i, max_offset;
     register BYTE *p;
+#if 0
     NE_MODULE *pModule;
     ET_BUNDLE *bundle;
     ET_ENTRY *entry;
@@ -318,6 +319,7 @@ static const CALLFROM16 *get_entry_point( STACK16FRAME *frame, LPSTR module, LPS
     }
     memcpy( func, p + 1, *p );
     func[*p] = 0;
+#endif
 
     end:
     /* Retrieve entry point call structure */
@@ -514,7 +516,9 @@ int relay_call_from_16( void *entry_point, unsigned char *args16, CONTEXT *conte
             return ((int(WINAPI/*stdcall?*/*)(void *entry_point, unsigned char *args16, CONTEXT *context))(frame->relay))(entry_point, args16, context);
         }
     }
+#if 0
     if (!TRACE_ON(relay) || !RELAY_ShowDebugmsgRelay( module, ordinal, func ))
+#endif
         return relay_call_from_16_no_debug( entry_point, args16, context, call );
 
     DPRINTF( "%04x:Call %s.%d: %s(",GetCurrentThreadId(), module, ordinal, func );
