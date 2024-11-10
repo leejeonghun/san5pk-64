@@ -2394,7 +2394,7 @@ LRESULT WINPROC_CallProc32ATo16( winproc_callback16_t callback, HWND hwnd, UINT 
         ret = callback( HWND_16(hwnd), msg, wParam, lParam, result, arg );
         break;
     case WM_ACTIVATE:
-        if (krnl386_get_compat_mode("256color") && (callback == call_window_proc16) && LOWORD(wParam))
+        if (KRNL386_GET_COMPAT_MODE_256COLOR && (callback == call_window_proc16) && LOWORD(wParam))
         {
             LRESULT res;
             callback(HWND_16(hwnd), WM_QUERYNEWPALETTE, NULL, NULL, &res, arg);
@@ -5009,7 +5009,7 @@ BOOL WINAPI DllMain(
     {
         load_user32_functions();
         window_type_table = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, 65536);
-        aero_diasble = krnl386_get_config_int("otvdm", "DisableAero", TRUE);
+        aero_diasble = krnl386_get_config_int("otvdm", "DisableAero", FALSE);
         if (!IsThemeActive())
         {
             aero_diasble = FALSE;

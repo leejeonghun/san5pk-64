@@ -187,10 +187,10 @@ EXPORTS
   IsOldWindowsTask @181
   GetProcessFlags @182
 
-  krnl386_get_config_string
-  krnl386_get_config_int
-  krnl386_get_compat_mode
-  krnl386_set_compat_path
+  ;krnl386_get_config_string
+  ;krnl386_get_config_int
+  ;krnl386_get_compat_mode
+  ;krnl386_set_compat_path
 
   GetModuleFileName16
   GetModuleName16

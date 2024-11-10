@@ -1181,7 +1181,7 @@ BOOL16 WINAPI StretchBlt16( HDC16 hdcDst, INT16 xDst, INT16 yDst,
 {
     HDC hdcsrc32 = HDC_32(hdcSrc);
     HDC hdcdst32 = HDC_32(hdcDst);
-    if (krnl386_get_compat_mode("256color") && krnl386_get_config_int("otvdm", "DIBPalette", FALSE) && (GetDeviceCaps(hdcsrc32, TECHNOLOGY) == DT_RASDISPLAY))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && krnl386_get_config_int("otvdm", "DIBPalette", FALSE) && (GetDeviceCaps(hdcsrc32, TECHNOLOGY) == DT_RASDISPLAY))
     {
         DIBSECTION dib;
         HBITMAP hbmp = GetCurrentObject(hdcsrc32, OBJ_BITMAP);
@@ -1537,7 +1537,7 @@ HGDIOBJ16 WINAPI SelectObject16( HDC16 hdc, HGDIOBJ16 handle )
     HGDIOBJ handle32 = HGDIOBJ_32(handle);
     HGDIOBJ result = SelectObject( hdc32, handle32 );
     DWORD type = GetObjectType(handle32);
-    if (krnl386_get_compat_mode("256color") && krnl386_get_config_int("otvdm", "DIBPalette", FALSE) && result && (type == OBJ_BITMAP))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && krnl386_get_config_int("otvdm", "DIBPalette", FALSE) && result && (type == OBJ_BITMAP))
     {
         DIBSECTION dib;
         int count = GetObject(handle32, sizeof(DIBSECTION), &dib);
@@ -1563,7 +1563,7 @@ INT16 WINAPI CombineRgn16(HRGN16 hDest, HRGN16 hSrc1, HRGN16 hSrc2, INT16 mode)
 HBITMAP16 WINAPI CreateBitmap16( INT16 width, INT16 height, UINT16 planes,
                                  UINT16 bpp, LPCVOID bits )
 {
-    if (krnl386_get_compat_mode("256color") && (bpp == 8) && (planes == 1))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && (bpp == 8) && (planes == 1))
     {
         HDC dc = GetDC(NULL);
         HBITMAP16 ret;
@@ -1662,7 +1662,7 @@ HBRUSH16 WINAPI CreateBrushIndirect16( const LOGBRUSH16 * brush )
 HBITMAP16 WINAPI CreateCompatibleBitmap16( HDC16 hdc, INT16 width, INT16 height )
 {
     HDC hdc32 = HDC_32(hdc);
-    if (krnl386_get_compat_mode("256color") && krnl386_get_config_int("otvdm", "DIBPalette", FALSE) && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && krnl386_get_config_int("otvdm", "DIBPalette", FALSE) && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY))
     {
         HBITMAP16 ret;
         VOID *section;
@@ -2260,7 +2260,7 @@ INT16 WINAPI GetDeviceCaps16( HDC16 hdc, INT16 cap )
     HDC hdc32 = HDC_32(hdc);
     INT16 ret = GetDeviceCaps( hdc32, cap );
     /* some apps don't expect -1 and think it's a B&W screen */
-    if (krnl386_get_compat_mode("256color") && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY))
     {
         switch (cap)
         {
@@ -2280,7 +2280,7 @@ INT16 WINAPI GetDeviceCaps16( HDC16 hdc, INT16 cap )
     }
     else if (((cap == NUMCOLORS) || (cap == NUMPENS)) && (ret == -1)) ret = 2048;
     else if (cap == VREFRESH) ret = 1;
-    if (krnl386_get_compat_mode("640X480") && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY))
+    if (KRNL386_GET_COMPAT_MODE_640X480 && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY))
     {
         switch (cap)
         {
@@ -2688,7 +2688,7 @@ LONG WINAPI SetBitmapBits16( HBITMAP16 hbitmap, LONG count, LPCVOID buffer )
     BITMAP bmp;
     if (GetObject(hbmp32, sizeof(BITMAP), &bmp) != sizeof(BITMAP))
         return 0;
-    if (krnl386_get_compat_mode("256color") && (bmp.bmBitsPixel > 8))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && (bmp.bmBitsPixel > 8))
     {
         HDC dc = CreateCompatibleDC(NULL);
         BITMAPINFO *bmap = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, 256*2 + sizeof(BITMAPINFOHEADER));
@@ -3662,7 +3662,7 @@ HPALETTE16 WINAPI GDISelectPalette16( HDC16 hdc, HPALETTE16 hpalette, WORD wBkg 
 UINT16 WINAPI GDIRealizePalette16( HDC16 hdc )
 {
     HDC hdc32 = HDC_32(hdc);
-    if (krnl386_get_compat_mode("256color") && krnl386_get_config_int("otvdm", "DIBPalette", FALSE) && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY) &&
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && krnl386_get_config_int("otvdm", "DIBPalette", FALSE) && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY) &&
         (GetObjectType(hdc32) == OBJ_DC))
         set_realized_palette(hdc32);
     return RealizePalette(hdc32);
@@ -3787,7 +3787,7 @@ UINT16 WINAPI SetSystemPaletteUse16( HDC16 hdc, UINT16 use )
 UINT16 WINAPI GetSystemPaletteUse16( HDC16 hdc )
 {
     UINT16 ret = GetSystemPaletteUse( HDC_32(hdc) );
-    if (!ret && krnl386_get_compat_mode("256color"))
+    if (!ret && KRNL386_GET_COMPAT_MODE_256COLOR)
          ret = syspaluse;
     return ret;
 }
@@ -3799,7 +3799,7 @@ UINT16 WINAPI GetSystemPaletteUse16( HDC16 hdc )
 UINT16 WINAPI GetSystemPaletteEntries16( HDC16 hdc, UINT16 start, UINT16 count,
                                          LPPALETTEENTRY entries )
 {
-    if (krnl386_get_compat_mode("256color") && krnl386_get_config_int("otvdm", "DIBPalette", FALSE))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && krnl386_get_config_int("otvdm", "DIBPalette", FALSE))
     {
         HPALETTE hpal = get_realized_palette();
         if (hpal == GetStockObject(DEFAULT_PALETTE))
@@ -4049,7 +4049,7 @@ INT16 WINAPI SetDIBits16( HDC16 hdc, HBITMAP16 hbitmap, UINT16 startscan,
                           UINT16 coloruse )
 {
     HBITMAP hbitmap32 = HBITMAP_32(hbitmap);
-    if (krnl386_get_compat_mode("256color"))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR)
     {
         // the conversion from 8bpp->1 on winxp+ (even in 256 color mode) is different than win31/95 and wine
         // the problem shows in The Even More Incredible Machine where the sprites are almost completely masked out
@@ -4132,7 +4132,7 @@ HBITMAP16 WINAPI CreateDIBitmap16( HDC16 hdc, const BITMAPINFOHEADER * header,
         memcpy(bmp, data, hdrsize);
         bmp->bmiHeader.biSizeImage = rle_size(data->bmiHeader.biCompression, bits);
     }
-    if (krnl386_get_compat_mode("256color") && krnl386_get_config_int("otvdm", "DIBPalette", FALSE))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && krnl386_get_config_int("otvdm", "DIBPalette", FALSE))
     {
         ret = CreateCompatibleBitmap16(hdc, header->biWidth, header->biHeight);
         SetDIBits(HDC_32(hdc), HBITMAP_32(ret), 0, data->bmiHeader.biHeight, bits, bmp ? bmp : data, coloruse);

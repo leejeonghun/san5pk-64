@@ -1595,7 +1595,7 @@ INT16 WINAPI GetSystemMetrics16( INT16 index )
             }
         }
     }
-    if (krnl386_get_compat_mode("640X480"))
+    if (KRNL386_GET_COMPAT_MODE_640X480)
     {
         switch (index)
         {
@@ -2228,7 +2228,7 @@ HPALETTE16 WINAPI SelectPalette16( HDC16 hdc, HPALETTE16 hpal, BOOL16 bForceBack
     HDC hdc32 = HDC_32(hdc);
     if ((GetObjectType(hpal32) != OBJ_PAL) || ((GetObjectType(hdc32) != OBJ_DC) && (GetObjectType(hdc32) != OBJ_MEMDC)))
         return NULL;
-    if (krnl386_get_compat_mode("256color") && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY))
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY))
     {
         DWORD *dclist = (WORD *)GetPtr16(hpal, 1);
         int found = -1;
@@ -2275,7 +2275,7 @@ HPALETTE16 WINAPI SelectPalette16( HDC16 hdc, HPALETTE16 hpal, BOOL16 bForceBack
 UINT16 WINAPI RealizePalette16( HDC16 hdc )
 {
     HDC hdc32 = HDC_32(hdc);
-    if (krnl386_get_compat_mode("256color") && krnl386_get_config_int("otvdm", "DIBPalette", FALSE)
+    if (KRNL386_GET_COMPAT_MODE_256COLOR && krnl386_get_config_int("otvdm", "DIBPalette", FALSE)
             && (GetDeviceCaps(hdc32, TECHNOLOGY) == DT_RASDISPLAY) && (GetObjectType(hdc32) == OBJ_DC))
         set_realized_palette(hdc32);
     return UserRealizePalette(hdc32);

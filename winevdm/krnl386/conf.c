@@ -1,3 +1,4 @@
+#if 0
 #include <Windows.h>
 static BOOL init;
 
@@ -41,3 +42,4 @@ DWORD WINAPI krnl386_get_config_int(LPCSTR appname, LPCSTR keyname, INT def)
     LeaveCriticalSection(&critical_section);
     return result;
 }
+#endif

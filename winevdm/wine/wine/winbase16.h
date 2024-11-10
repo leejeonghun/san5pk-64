@@ -562,8 +562,16 @@ BOOL16      WINAPI WriteProfileSection16(LPCSTR,LPCSTR);
 
 //config
 
+#define KRNL386_GET_COMPAT_MODE_256COLOR 1
+#define KRNL386_GET_COMPAT_MODE_640X480 0
+#define krnl386_get_config_int(appname, keyname, def) (def)
+#define krnl386_get_config_string(appname, keyname, def, ret, size) strcpy_s(ret, size, def)
+#define krnl386_set_compat_path(path)
+
+#if 0
 DWORD WINAPI krnl386_get_config_string(LPCSTR appname, LPCSTR keyname, LPCSTR def, LPSTR ret, DWORD size);
 DWORD WINAPI krnl386_get_config_int(LPCSTR appname, LPCSTR keyname, INT def);
 BOOL WINAPI krnl386_get_compat_mode(const LPCSTR mode);
 void WINAPI krnl386_set_compat_path(const LPCSTR path);
+#endif
 #endif /* __WINE_WINE_WINBASE16_H */
