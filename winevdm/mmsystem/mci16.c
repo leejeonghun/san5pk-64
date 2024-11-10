@@ -937,6 +937,23 @@ UINT CALLBACK check_break(UINT16 wDevID, DWORD data)
     return key & 1 ? 0xffffffff : 0;
 }
 
+static const UINT_PTR nIDEvent = 0xC0DEFEED;
+static DWORD wDevIdCd = -1;
+static HWND hWndCallback = INVALID_HANDLE_VALUE;
+
+static VOID CALLBACK SendMCINotifyProc(HWND hWnd, UINT uMsg, UINT_PTR wParam, DWORD lParam) {
+    KillTimer(hWnd, nIDEvent);
+
+    DWORD count = 0;
+    ReleaseThunkLock(&count);
+    DWORD dwRet = mciSendCommand(wDevIdCd, MCI_SEEK, MCI_SEEK_TO_START, NULL);
+    RestoreThunkLock(count);
+
+    if (dwRet == 0) {
+        PostMessage(hWnd, MM_MCINOTIFY, MCI_NOTIFY_SUCCESSFUL, wDevIdCd);
+    }
+}
+
 /**************************************************************************
  * 				mciSendCommand			[MMSYSTEM.701]
  */
@@ -1011,6 +1028,27 @@ DWORD WINAPI mciSendCommand16(UINT16 wDevID, UINT16 wMsg, DWORD dwParam1, DWORD 
             ReleaseThunkLock(&count);
             dwRet = mciSendCommandW(wDevID, wMsg, dwParam1, dwParam2);
             RestoreThunkLock(count);
+
+            if (dwRet == 0) {
+                if (wMsg == MCI_OPEN) {
+                    MCI_OPEN_PARMS* mciOpenParams = (MCI_OPEN_PARMS*)dwParam2;
+                    if (mciOpenParams->lpstrDeviceType == MCI_DEVTYPE_CD_AUDIO) {
+                        wDevIdCd = mciOpenParams->wDeviceID;
+                    }
+                }
+                else if (wMsg == MCI_PLAY && wDevID == wDevIdCd)
+                {
+                    hWndCallback = LOWORD(((MCI_PLAY_PARMS*)dwParam2)->dwCallback);
+                    const int nMin = MCI_TMSF_MINUTE(((MCI_PLAY_PARMS*)dwParam2)->dwTo);
+                    const int nSec = MCI_TMSF_SECOND(((MCI_PLAY_PARMS*)dwParam2)->dwTo);
+
+                    SetTimer(hWndCallback, nIDEvent, (nMin * 60 + nSec) * 1000 - 1500, SendMCINotifyProc);
+                }
+                else if (wMsg == MCI_STOP && wDevID == wDevIdCd && hWndCallback != INVALID_HANDLE_VALUE) {
+                    KillTimer(hWndCallback, nIDEvent);
+                }
+            }
+
             if (res == MMSYSTEM_MAP_OKMEM)
             {
                 if (!p2)
