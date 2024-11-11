@@ -1,0 +1,8 @@
+; File generated automatically from ..\mmsystem\mmsystem.dll16.spec; do not edit!
+
+LIBRARY mmsystem.dll16
+
+EXPORTS
+  _wine_spec_dos_header @1 DATA
+  DrvOpen16
+  xlate_str_handle

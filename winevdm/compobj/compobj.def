@@ -1,0 +1,11 @@
+; File generated automatically from ..\compobj\compobj.dll16.spec; do not edit!
+
+LIBRARY compobj.dll16
+
+EXPORTS
+  _wine_spec_dos_header @1 DATA
+  get_task_imalloc16 @2
+  CoInitialize16 @3
+  CoUninitialize16 @4
+  StringFromGUID216 @5
+  CoCreateInstance16

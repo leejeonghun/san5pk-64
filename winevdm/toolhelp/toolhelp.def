@@ -1,0 +1,13 @@
+; File generated automatically from toolhelp\toolhelp.dll16.spec; do not edit!
+
+LIBRARY toolhelp.dll16
+
+EXPORTS
+  _wine_spec_dos_header @1 DATA
+  get_intcb
+  next_intcb
+  InterruptRegister16
+  InterruptUnRegister16
+  NotifyRegister16
+  NotifyUnRegister16
+  TOOLHELP_CallNotify

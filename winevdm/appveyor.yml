@@ -1,0 +1,87 @@
+version: dev{build}
+image: Visual Studio 2017
+configuration: Release
+environment:
+  matrix:
+  - THIS_BUILD_IS_RECOMMENDED__VCXPROJ_BUILD: 1
+  - THIS_BUILD_IS_NOT_RECOMMENDED__GCC_CMAKE_BUILD: 1
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+build:
+  parallel: true
+  verbosity: quiet
+
+for:
+-
+  matrix:
+    only:
+      - THIS_BUILD_IS_NOT_RECOMMENDED__GCC_CMAKE_BUILD: 1
+  build_script:
+   ps: |
+     mkdir build
+     cd build
+     $env:MSYSTEM = "MINGW32"
+     $env:MSYSTEM_CARCH = "i686"
+     $env:MSYSTEM_CHOST = "i686-w64-mingw32"
+     $env:MSYSTEM_PREFIX = "C:/msys64/mingw32"
+     $env:Path = "C:\msys64\mingw32\bin;C:\msys64\usr\local\bin;C:\msys64\usr\bin;" + $env:Path
+     cmake -G"MSYS Makefiles" .. -DCMAKE_CXX_FLAGS=-w -DCMAKE_C_FLAGS=-w
+     if (0 -ne $LastExitCode)
+     {
+         throw "Failed to execute cmake"
+     }
+     make -j 2
+     if (0 -ne $LastExitCode)
+     {
+         throw "Failed to execute make"
+     }
+     mkdir otvdm-cmake-gcc-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}
+     ..\tools\package.ps1 -root ..\ -src .\ -dst otvdm-cmake-gcc-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER} -objcopy "C:\msys64\usr\bin\objcopy.exe" -as "as.exe" -dll otvdm-cmake-gcc-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}
+     copy C:\msys64\mingw32\bin\libgcc_s_dw2-1.dll otvdm-cmake-gcc-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}\
+     copy C:\msys64\mingw32\bin\libstdc++-6.dll otvdm-cmake-gcc-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}\
+     copy C:\mingw-w64\i686-5.3.0-posix-dwarf-rt_v4-rev0\mingw32\bin\libwinpthread-1.dll otvdm-cmake-gcc-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}\
+     7z a ..\otvdm-cmake-gcc-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}.zip otvdm-cmake-gcc-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}
+
+-
+  matrix:
+    only:
+      - THIS_BUILD_IS_RECOMMENDED__VCXPROJ_BUILD: 1
+  before_build:
+    ps: |
+      C:\msys64\usr\bin\as --version
+      echo "<?xml version=""1.0"" encoding=""utf-8""?>
+      <Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+        <ImportGroup Label=""PropertySheets"" />
+        <PropertyGroup Label=""UserMacros"">
+          <AsmPath>C:\msys64\usr\bin\</AsmPath>
+          <NtDllLibPath>`$(UniversalCRTSdkDir)Lib\10.0.17134.0\um\x86\</NtDllLibPath>
+        </PropertyGroup>
+        <PropertyGroup>
+          <_PropertySheetDisplayName>MacroPropertySheet</_PropertySheetDisplayName>
+          <IncludePath>`$(SolutionDir)wow32;`$(IncludePath)</IncludePath>
+        </PropertyGroup>
+        <ItemDefinitionGroup>
+          <ClCompile>
+            <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+            <PreprocessorDefinitions>__CI_VERSION=${env:APPVEYOR_BUILD_NUMBER};%(PreprocessorDefinitions)</PreprocessorDefinitions>
+            <WarningLevel>TurnOffAllWarnings</WarningLevel>
+          </ClCompile>
+        </ItemDefinitionGroup>
+        <ItemGroup>
+          <BuildMacro Include=""AsmPath"">
+            <Value>`$(AsmPath)</Value>
+          </BuildMacro>
+          <BuildMacro Include=""NtDllLibPath"">
+            <Value>`$(NtDllLibPath)</Value>
+          </BuildMacro>
+        </ItemGroup>
+      </Project>
+      " > C:\projects\winevdm\PropertySheet.props
+
+  before_package:
+    ps: |
+      .\tools\package.ps1 -root .\ -src Release -dst otvdm-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER} -objcopy "C:\msys64\usr\bin\objcopy.exe" -as "C:\msys64\usr\bin\as.exe"
+      7z a otvdm-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}.zip otvdm-${env:APPVEYOR_REPO_BRANCH}-${env:APPVEYOR_BUILD_NUMBER}
+
+artifacts:
+- path: '*.zip'
+  name: otvdm-Debug
