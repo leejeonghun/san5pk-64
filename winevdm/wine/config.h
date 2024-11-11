@@ -943,7 +943,7 @@
 /* #define HAVE_STRNCASECMP 1 */
 
 /* Define to 1 if you have the `strnlen' function. */
-/* #undef HAVE_STRNLEN */
+#define HAVE_STRNLEN 1
 
 /* Define to 1 if you have the <stropts.h> header file. */
 /* #undef HAVE_STROPTS_H */
