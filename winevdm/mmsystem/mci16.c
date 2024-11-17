@@ -954,6 +954,27 @@ static VOID CALLBACK SendMCINotifyProc(HWND hWnd, UINT uMsg, UINT_PTR wParam, DW
     }
 }
 
+static LPCWSTR FindGameCdDrive() {
+    static wchar_t buf[128] = { 0 };
+
+    LPWSTR drive = buf;
+    DWORD length = GetLogicalDriveStringsW(_countof(buf) - 1, buf);
+    while (length) {
+        if (GetDriveTypeW(drive) == DRIVE_CDROM) {
+            wchar_t volume[MAX_PATH] = { 0 };
+            GetVolumeInformationW(drive, volume, _countof(volume), NULL, NULL, NULL, NULL, 0);
+            if (wcscmp(volume, L"SAM5WPK") == 0) {
+                drive[2] = L'\0';
+                return drive;
+            }
+        }
+        const size_t cch = wcslen(drive) + 1;
+        length -= cch;
+        drive += cch;
+    }
+    return NULL;
+}
+
 /**************************************************************************
  * 				mciSendCommand			[MMSYSTEM.701]
  */
@@ -1011,6 +1032,9 @@ DWORD WINAPI mciSendCommand16(UINT16 wDevID, UINT16 wMsg, DWORD dwParam1, DWORD 
     if (to32) {
         MMSYSTEM_MapType res;
 
+	DWORD mciOpenFlag = 0;
+    LPCWSTR lpstrElementName = NULL;
+
 	dwRet = MCIERR_INVALID_DEVICE_ID;
 
         switch (res = MCI_MapMsg16To32W(wMsg, dwParam1, &dwParam2)) {
@@ -1025,9 +1049,31 @@ DWORD WINAPI mciSendCommand16(UINT16 wDevID, UINT16 wMsg, DWORD dwParam1, DWORD 
         case MMSYSTEM_MAP_OKMEM:
             if (wndwait)
                 ((MCI_GENERIC_PARMS *)dwParam2)->dwCallback = wndwait;
+
+            if (wMsg == MCI_OPEN) {
+                MCI_OPEN_PARMSW* openParams = dwParam2;
+                if (openParams->lpstrDeviceType == MCI_DEVTYPE_CD_AUDIO) {
+                    mciOpenFlag = dwParam1;
+                    lpstrElementName = openParams->lpstrElementName;
+                    LPCWSTR drive = FindGameCdDrive();
+                    if (drive != NULL) {
+                        openParams->lpstrElementName = drive;
+                        dwParam1 |= MCI_OPEN_ELEMENT;
+                    }
+                }
+            }
+
             ReleaseThunkLock(&count);
             dwRet = mciSendCommandW(wDevID, wMsg, dwParam1, dwParam2);
             RestoreThunkLock(count);
+
+            if (wMsg == MCI_OPEN) {
+                MCI_OPEN_PARMSW* openParams = dwParam2;
+                if (openParams->lpstrDeviceType == MCI_DEVTYPE_CD_AUDIO) {
+                    dwParam1 = mciOpenFlag;
+                    openParams->lpstrElementName = lpstrElementName;
+                }
+            }
 
             if (dwRet == 0) {
                 if (wMsg == MCI_OPEN) {
