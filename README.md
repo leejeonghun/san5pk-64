@@ -6,6 +6,9 @@
 한국 정식 발매된 한글판 삼국지5 파워업키트를 64비트 Windows 10 및 11 에서 실행할 수 있게 하는 패치입니다.
 
 
+![san5pk](https://github.com/user-attachments/assets/79993ee1-3ce2-4613-bdb0-732cec1e08c7)
+
+
 ## 기능
 
 * 본 패치 적용 시, [16비트 프로세스를 지원하지 않는 64비트 윈도우즈](https://learn.microsoft.com/en-us/troubleshoot/windows-client/application-management/x64-windows-not-support-16-bit-programs) 에서 한국 정식 발매된 한글판 삼국지5 파워업키트를 정상 실행할 수 있습니다.
