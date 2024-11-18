@@ -1408,7 +1408,9 @@ HINSTANCE16 WINAPI LoadModule16( LPCSTR name, LPVOID paramBlock )
     {
         /* Main case: load first instance of NE module */
         params = paramBlock;
-        SEGPTR cmdline = IsBadReadPtr(params, 8) ? NULL : params->cmdLine;
+        SEGPTR cmdline = NULL;
+		if (!IsBadReadPtr(params, 8))
+			cmdline = params->cmdLine;
         if ((hModule = MODULE_LoadModule16(name, FALSE, lib_only, cmdline)) < 32)
         {
             if (hModule == 21/* win32 */)
